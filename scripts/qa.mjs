@@ -72,6 +72,19 @@ const products = read(join(ROOT, 'lib/products.ts'));
 const urls = [...products.matchAll(/productUrl:\s*'([^']+)'/g)].map((x) => x[1]);
 const badUrls = urls.filter((u) => !u.startsWith('https://bodegacooler.com/products/'));
 urls.length && !badUrls.length ? pass(`product URLs (${urls.length}) on merchant origin`) : fail('product URLs', badUrls.join(', ') || 'none found');
+// Deep links: each product URL + click_id must yield exactly one click_id and keep the product path
+if (m) {
+  const cid = new URL(m[1]).searchParams.get('click_id');
+  const badDeep = urls.filter((u) => {
+    const d = new URL(u);
+    if (d.searchParams.has('click_id')) return true; // manifest URL must be clean; code appends it once
+    d.searchParams.set('click_id', cid);
+    return d.searchParams.getAll('click_id').length !== 1 || !d.pathname.startsWith('/products/');
+  });
+  badDeep.length ? fail('deep link integrity', badDeep.join(', ')) : pass(`deep links: ${urls.length} products, exactly one click_id each`);
+}
+/NEXT_PUBLIC_USE_PRODUCT_DEEP_LINKS\s*!==\s*'false'/.test(read(join(ROOT, 'lib/affiliate.ts'))) ? pass('deep links enabled by default') : fail('deep links default', 'flag logic changed');
+/NEXT_PUBLIC_USE_PRODUCT_DEEP_LINKS=true/.test(read(join(ROOT, '.env.example'))) ? pass('.env.example sets deep links true') : fail('.env.example', 'deep link flag not true');
 /availability:\s*'(sold_out|unknown)'/.test(products) ? fail('availability gate', 'non-in-stock product present in manifest') : pass('availability gate: all manifest products in_stock');
 
 // 6. Required files and legal routes

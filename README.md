@@ -24,10 +24,15 @@ npm run dev         # http://localhost:3000/bodegacooler
 
 ## Affiliate routing (important)
 
-Every CTA goes to `DEFAULT_AFFILIATE_URL` (`https://bodegacooler.com/?click_id=ehaxusbr`) by default.
-Product-page deep links (`<product url>?click_id=ehaxusbr`) are implemented but **OFF**, because
-the merchant's handling of `click_id` on product pages was not independently verified (status `PLAUSIBLE`).
-After the merchant/network confirms it, set `NEXT_PUBLIC_USE_PRODUCT_DEEP_LINKS=true` and redeploy.
+Product CTAs (T50, T60, TWW75, TWW95 cards, hero, sticky bar, final T50 CTA) deep-link to the product's
+own page with `?click_id=ehaxusbr` appended. Deep links are **ON by default**; set
+`NEXT_PUBLIC_USE_PRODUCT_DEEP_LINKS=false` to send everything to `DEFAULT_AFFILIATE_URL`.
+General CTAs ("Browse all Bodega fridges") always use `DEFAULT_AFFILIATE_URL`
+(`https://bodegacooler.com/?click_id=ehaxusbr`).
+
+Product URLs are the live pages found on bodegacooler.com (see `productUrl` in `lib/products.ts`; change a
+URL there and the CTA follows). Whether the merchant credits `click_id` on product-page landings is not
+independently verified (status `PLAUSIBLE`); confirm with the merchant/network.
 
 ## Environment variables
 
